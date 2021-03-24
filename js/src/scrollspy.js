@@ -24,7 +24,7 @@ const DATA_API_KEY = '.data-api'
 
 const Default = {
   target: null,
-  rootMargin: '10px 0px 10px 0px'
+  rootMargin: '0px 0px -50%'
 }
 
 const DefaultType = {
@@ -180,7 +180,7 @@ class ScrollSpy extends BaseComponent {
       const entry = entries
         .filter(el => el.isIntersecting)
         .sort((a, b) => (a.intersectionRect.height - b.intersectionRect.height))
-        .pop()
+        .shift()
 
       if (entry) {
         this._activate(this._targets.find(el => el.hash === `#${entry.target.id}`))
