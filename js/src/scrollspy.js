@@ -5,7 +5,7 @@
  * --------------------------------------------------------------------------
  */
 
-import { defineJQueryPlugin, isElement, typeCheckConfig } from './util/index'
+import { defineJQueryPlugin, isElement, reflow, typeCheckConfig } from './util/index'
 import EventHandler from './dom/event-handler'
 import Manipulator from './dom/manipulator'
 import SelectorEngine from './dom/selector-engine'
@@ -24,7 +24,7 @@ const DATA_API_KEY = '.data-api'
 
 const Default = {
   target: null,
-  rootMargin: '0px 0px -50%'
+  rootMargin: '0px'
 }
 
 const DefaultType = {
@@ -41,6 +41,7 @@ const CLASS_NAME_ACTIVE = 'active'
 const SELECTOR_DATA_SPY = '[data-bs-spy="scroll"]'
 const SELECTOR_NAV_LIST_GROUP = '.nav, .list-group'
 const SELECTOR_NAV_LINKS = '.nav-link'
+const SELECTOR_NAV_ITEMS = '.nav-item'
 const SELECTOR_LIST_ITEMS = '.list-group-item'
 const SELECTOR_DROPDOWN = '.dropdown'
 const SELECTOR_DROPDOWN_TOGGLE = '.dropdown-toggle'
@@ -57,15 +58,13 @@ class ScrollSpy extends BaseComponent {
 
     // this._element is  the observablesContainer
     this._config = this._getConfig(config)
-    this._targetsContainer = this._config.target
+    this._target = this._config.target
 
-    if (!isElement(this._targetsContainer)) {
+    if (!isElement(this._target)) {
       throw new TypeError('Target Container is not defined')
-      // this.dispose()
-      // return
     }
 
-    this._targets = []
+    this._targetLinks = []
     this._activeTarget = null
     this._observableSections = []
     this._observer = null
@@ -86,14 +85,15 @@ class ScrollSpy extends BaseComponent {
 
   refresh() {
     // `${SELECTOR_NAV_LINKS}, ${SELECTOR_LIST_ITEMS}, .${CLASS_NAME_DROPDOWN_ITEM}`
-    this._targets = SelectorEngine
-      .find('[href]', this._targetsContainer)
+    this._targetLinks = SelectorEngine
+      .find('[href]', this._target)
       .filter(el => el.hash.length > 0)// ensure that all have id
 
-    this._observableSections = this._targets
+    this._observableSections = this._targetLinks
       .map(el => SelectorEngine.findOne(el.hash, this._element))
       .filter(el => el)// filter nulls
 
+    reflow(this._element)
     if (this._observer) {
       this._observer.disconnect()
     } else {
@@ -121,10 +121,6 @@ class ScrollSpy extends BaseComponent {
     if (!isElement(config.target)) {
       config.target = SelectorEngine.findOne(config.target)
     }
-
-    // if (!config.target.id) {
-    //   config.target.id = getUID(NAME)
-    // }
 
     typeCheckConfig(NAME, config, DefaultType)
 
@@ -157,11 +153,11 @@ class ScrollSpy extends BaseComponent {
             .forEach(item => item.classList.add(CLASS_NAME_ACTIVE))
 
           // Handle special case when .nav-link is inside .nav-item
-          // SelectorEngine.prev(listGroup, SELECTOR_NAV_ITEMS)
-          //   .forEach(navItem => {
-          //     SelectorEngine.children(navItem, SELECTOR_NAV_LINKS)
-          //       .forEach(item => item.classList.add(CLASS_NAME_ACTIVE))
-          //   })
+          SelectorEngine.prev(listGroup, SELECTOR_NAV_ITEMS)
+            .forEach(navItem => {
+              SelectorEngine.children(navItem, SELECTOR_NAV_LINKS)
+                .forEach(item => item.classList.add(CLASS_NAME_ACTIVE))
+            })
         })
     }
 
@@ -171,19 +167,29 @@ class ScrollSpy extends BaseComponent {
   }
 
   _clearActiveClass() {
-    SelectorEngine.find(`.${CLASS_NAME_ACTIVE}`, this._targetsContainer)
+    SelectorEngine.find(`.${CLASS_NAME_ACTIVE}`, this._target)
       .forEach(node => node.classList.remove(CLASS_NAME_ACTIVE))
   }
 
   _getNewObserver() {
+    // IntersectionObserver triggers and return element only when is shown and when is gone (threshold: 0). So we keep visible elements here
+    const visibleEntries = new Map()
+
     const callback = entries => {
-      const entry = entries
-        .filter(el => el.isIntersecting)
-        .sort((a, b) => (a.intersectionRect.height - b.intersectionRect.height))
+      entries.forEach(entry => {
+        const key = entry.target.id
+        if (entry.isIntersecting || entry.intersectionRatio > 0.5) {
+          visibleEntries.set(key, entry.target.offsetTop)
+        } else {
+          visibleEntries.delete(key)
+        }
+      })
+      const firstVisible = [...visibleEntries.entries()]
+        .sort((a, b) => a[1] - b[1])
         .shift()
 
-      if (entry) {
-        this._activate(this._targets.find(el => el.hash === `#${entry.target.id}`))
+      if (firstVisible) {
+        this._activate(this._targetLinks.find(el => el.hash === `#${firstVisible[0]}`))
       }
     }
 

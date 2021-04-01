@@ -2,7 +2,7 @@ import ScrollSpy from '../../src/scrollspy'
 import Manipulator from '../../src/dom/manipulator'
 
 /** Test helpers */
-import { clearFixture, getFixture, jQueryMock } from '../helpers/fixture'
+import { clearFixture, createEvent, getFixture, jQueryMock } from '../helpers/fixture'
 
 describe('ScrollSpy', () => {
   let fixtureEl
@@ -25,7 +25,7 @@ describe('ScrollSpy', () => {
     const target = fixtureEl.querySelector(targetSelector)
 
     // add top padding to fix Chrome on Android failures
-    const paddingTop = 1
+    const paddingTop = 5
     const scrollHeight = Math.ceil(contentEl.scrollTop + Manipulator.position(target).top) + paddingTop
 
     function listener() {
@@ -100,7 +100,7 @@ describe('ScrollSpy', () => {
         target: '#navigation'
       })
 
-      expect(scrollSpy._targets.length).toEqual(2)
+      expect(scrollSpy._targetLinks.length).toEqual(2)
     })
 
     it('should only switch "active" class on current target', done => {
@@ -141,8 +141,7 @@ describe('ScrollSpy', () => {
         done()
       })
 
-      scrollSpyEl.scrollIntoView(true)
-      scrollSpyEl.querySelector('#detail').scrollIntoView(true)
+      scrollSpyEl.scrollTop = 350
     })
 
     it('should only switch "active" class on current target specified w element', done => {
@@ -183,8 +182,44 @@ describe('ScrollSpy', () => {
         done()
       })
 
-      scrollSpyEl.scrollIntoView(true)
-      scrollSpyEl.querySelector('#detail').scrollIntoView(true)
+      scrollSpyEl.scrollTop = 350
+    })
+
+    it('should correctly select middle navigation option when large offset is used', done => {
+      fixtureEl.innerHTML = [
+        '<div id="header" style="height: 500px;"></div>',
+        '<nav id="navigation" class="navbar">',
+        ' <ul class="navbar-nav">',
+        '   <li class="nav-item"><a class="nav-link active" id="one-link" href="#one">One</a></li>',
+        '   <li class="nav-item"><a class="nav-link" id="two-link" href="#two">Two</a></li>',
+        '   <li class="nav-item"><a class="nav-link" id="three-link" href="#three">Three</a></li>',
+        ' </ul>',
+        '</nav>',
+        '<div id="content" style="height: 200px; overflow-y: auto;">',
+        ' <div id="one" style="height: 500px;"></div>',
+        ' <div id="two" style="height: 300px;"></div>',
+        ' <div id="three" style="height: 10px;"></div>',
+        '</div>'
+      ].join('')
+
+      const contentEl = fixtureEl.querySelector('#content')
+      const offsetTop = Manipulator.position(contentEl).top
+      const scrollSpy = new ScrollSpy(contentEl, {
+        target: '#navigation',
+        rootMargin: `${offsetTop} 0px 0px`
+      })
+
+      spyOn(scrollSpy, '_process').and.callThrough()
+
+      contentEl.addEventListener('scroll', () => {
+        expect(fixtureEl.querySelector('#one-link').classList.contains('active')).toEqual(false)
+        expect(fixtureEl.querySelector('#two-link').classList.contains('active')).toEqual(true)
+        expect(fixtureEl.querySelector('#three-link').classList.contains('active')).toEqual(false)
+        expect(scrollSpy._process).toHaveBeenCalled()
+        done()
+      })
+
+      contentEl.scrollTop = 550
     })
 
     it('should add the active class to the correct element', done => {
@@ -195,7 +230,7 @@ describe('ScrollSpy', () => {
         '    <li class="nav-item"><a class="nav-link" id="a-2" href="#div-2">div 2</a></li>',
         '  </ul>',
         '</nav>',
-        '<div class="content" style="position:relative; overflow: auto; height: 50px">',
+        '<div class="content" style="overflow: auto; height: 50px">',
         '  <div id="div-1" style="height: 100px; padding: 0; margin: 0">div 1</div>',
         '  <div id="div-2" style="height: 200px; padding: 0; margin: 0">div 2</div>',
         '</div>'
@@ -234,7 +269,7 @@ describe('ScrollSpy', () => {
         '    <a class="nav-link" id="a-2" href="#div-2">div 2</a>',
         '  </nav>',
         '</nav>',
-        '<div class="content" style="position:relative; overflow: auto; height: 50px">',
+        '<div class="content" style="overflow: auto; height: 50px">',
         '  <div id="div-1" style="height: 100px; padding: 0; margin: 0">div 1</div>',
         '  <div id="div-2" style="height: 200px; padding: 0; margin: 0">div 2</div>',
         '</div>'
@@ -274,7 +309,7 @@ describe('ScrollSpy', () => {
         '    <a class="list-group-item" id="a-2" href="#div-2">div 2</a>',
         '  </div>',
         '</nav>',
-        '<div class="content" style="position:relative; overflow: auto; height: 50px">',
+        '<div class="content" style="overflow: auto; height: 50px">',
         '  <div id="div-1" style="height: 100px; padding: 0; margin: 0">div 1</div>',
         '  <div id="div-2" style="height: 200px; padding: 0; margin: 0">div 2</div>',
         '</div>'
@@ -328,12 +363,11 @@ describe('ScrollSpy', () => {
         target: '#navigation'
       })
 
-      const active = fixtureEl.querySelector('.active')
+      const active = () => fixtureEl.querySelector('.active')
 
-      fixtureEl.querySelector('#two').scrollIntoView(true)
-
+      contentEl.scrollTop = 300
       expect(fixtureEl.querySelectorAll('.active').length).toEqual(1)
-      expect(active.getAttribute('id')).toEqual('two-link')
+      expect(active().getAttribute('id')).toEqual('two-link')
 
       fixtureEl.querySelector('#spacer').scrollIntoView(true)
 
@@ -351,7 +385,7 @@ describe('ScrollSpy', () => {
         '    <li class="nav-item"><a id="three-link" class="nav-link" href="#three">Three</a></li>',
         '  </ul>',
         '</nav>',
-        '<div id="content" style="position:relative; height: 200px; overflow-y: auto;">',
+        '<div id="content" style="height: 200px; overflow-y: auto;">',
         '  <div id="one" style="height: 100px;"></div>',
         '  <div id="two" style="height: 100px;"></div>',
         '  <div id="three" style="height: 100px;"></div>',
@@ -359,12 +393,12 @@ describe('ScrollSpy', () => {
         '</div>'
       ].join('')
 
-      const negativeHeight = -20
-      const startOfSectionTwo = 110
+      const negativeHeight = -10
+      const startOfSectionTwo = 101
       const contentEl = fixtureEl.querySelector('#content')
       const scrollSpy = new ScrollSpy(contentEl, {
         target: '#navigation',
-        offset: contentEl.offsetTop
+        rootMargin: `${contentEl.offsetTop}px 0px 0px`
       })
       const spy = spyOn(scrollSpy, '_activate').and.callThrough()
 
@@ -386,11 +420,11 @@ describe('ScrollSpy', () => {
           done()
         }
       })
-
-      contentEl.scrollIntoView(true)
-      contentEl.scrollTo({
-        top: startOfSectionTwo
-      })
+      contentEl.scrollTop = startOfSectionTwo
+      // contentEl.scrollIntoView(true)
+      // contentEl.scrollTo({
+      //   top: startOfSectionTwo
+      // })
     })
 
     it('should correctly select navigation element on backward scrolling when each target section height is 100%', done => {
@@ -603,6 +637,21 @@ describe('ScrollSpy', () => {
 
     it('should return null if there is no instance', () => {
       expect(ScrollSpy.getInstance(fixtureEl)).toEqual(null)
+    })
+  })
+
+  describe('event handler', () => {
+    it('should create scrollspy on window load event', () => {
+      fixtureEl.innerHTML = [
+        '<div id="nav"></div>' +
+        '<div data-bs-spy="scroll" data-bs-target="#nav"></div>'
+      ].join('')
+
+      const scrollSpyEl = fixtureEl.querySelector('div')
+
+      window.dispatchEvent(createEvent('load'))
+
+      expect(ScrollSpy.getInstance(scrollSpyEl)).not.toBeNull()
     })
   })
 })
