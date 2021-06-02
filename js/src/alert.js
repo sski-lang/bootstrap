@@ -5,12 +5,10 @@
  * --------------------------------------------------------------------------
  */
 
-import {
-  defineJQueryPlugin,
-  getElementFromSelector
-} from './util/index'
+import { defineJQueryPlugin, getElementFromSelector } from './util/index'
 import EventHandler from './dom/event-handler'
 import BaseComponent from './base-component'
+import { enableDismissTrigger } from './util/component-functions'
 
 /**
  * ------------------------------------------------------------------------
@@ -21,13 +19,9 @@ import BaseComponent from './base-component'
 const NAME = 'alert'
 const DATA_KEY = 'bs.alert'
 const EVENT_KEY = `.${DATA_KEY}`
-const DATA_API_KEY = '.data-api'
-
-const SELECTOR_DISMISS = '[data-bs-dismiss="alert"]'
 
 const EVENT_CLOSE = `close${EVENT_KEY}`
 const EVENT_CLOSED = `closed${EVENT_KEY}`
-const EVENT_CLICK_DATA_API = `click${EVENT_KEY}${DATA_API_KEY}`
 
 const CLASS_NAME_ALERT = 'alert'
 const CLASS_NAME_FADE = 'fade'
@@ -93,16 +87,6 @@ class Alert extends BaseComponent {
       }
     })
   }
-
-  static handleDismiss(alertInstance) {
-    return function (event) {
-      if (event) {
-        event.preventDefault()
-      }
-
-      alertInstance.close(this)
-    }
-  }
 }
 
 /**
@@ -111,8 +95,7 @@ class Alert extends BaseComponent {
  * ------------------------------------------------------------------------
  */
 
-EventHandler.on(document, EVENT_CLICK_DATA_API, SELECTOR_DISMISS, Alert.handleDismiss(new Alert()))
-
+enableDismissTrigger(Alert, 'close')
 /**
  * ------------------------------------------------------------------------
  * jQuery

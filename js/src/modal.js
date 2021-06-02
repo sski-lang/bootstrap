@@ -19,6 +19,7 @@ import SelectorEngine from './dom/selector-engine'
 import { getWidth as getScrollBarWidth, hide as scrollBarHide, reset as scrollBarReset } from './util/scrollbar'
 import BaseComponent from './base-component'
 import Backdrop from './util/backdrop'
+import { enableDismissTrigger } from './util/component-functions'
 
 /**
  * ------------------------------------------------------------------------
@@ -65,7 +66,6 @@ const CLASS_NAME_STATIC = 'modal-static'
 const SELECTOR_DIALOG = '.modal-dialog'
 const SELECTOR_MODAL_BODY = '.modal-body'
 const SELECTOR_DATA_TOGGLE = '[data-bs-toggle="modal"]'
-const SELECTOR_DATA_DISMISS = '[data-bs-dismiss="modal"]'
 
 /**
  * ------------------------------------------------------------------------
@@ -129,8 +129,6 @@ class Modal extends BaseComponent {
     this._setEscapeEvent()
     this._setResizeEvent()
 
-    EventHandler.on(this._element, EVENT_CLICK_DISMISS, SELECTOR_DATA_DISMISS, event => this.hide(event))
-
     EventHandler.on(this._dialog, EVENT_MOUSEDOWN_DISMISS, () => {
       EventHandler.one(this._element, EVENT_MOUSEUP_DISMISS, event => {
         if (event.target === this._element) {
@@ -142,11 +140,7 @@ class Modal extends BaseComponent {
     this._showBackdrop(() => this._showElement(relatedTarget))
   }
 
-  hide(event) {
-    if (event && ['A', 'AREA'].includes(event.target.tagName)) {
-      event.preventDefault()
-    }
-
+  hide() {
     if (!this._isShown || this._isTransitioning) {
       return
     }
@@ -434,6 +428,8 @@ EventHandler.on(document, EVENT_CLICK_DATA_API, SELECTOR_DATA_TOGGLE, function (
 
   data.toggle(this)
 })
+
+enableDismissTrigger(Modal)
 
 /**
  * ------------------------------------------------------------------------
