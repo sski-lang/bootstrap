@@ -436,7 +436,7 @@ EventHandler.on(document, EVENT_CLICK_DATA_API, SELECTOR_DATA_TOGGLE, function (
 
 EventHandler.on(document, EVENT_CLICK_DATA_API, SELECTOR_DATA_DISMISS, function (event) {
   const target = getElementFromSelector(this) || this.closest(SELECTOR)
-  const modal = Modal.getInstance(target) || new Modal(target)
+  const modal = Modal.getOrCreateInstance(target)
 
   modal.hide(event)
 })
