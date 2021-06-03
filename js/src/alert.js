@@ -104,7 +104,7 @@ EventHandler.on(document, EVENT_CLICK_DATA_API, SELECTOR_DISMISS, function (even
   }
 
   const target = getElementFromSelector(this) || this.closest(`.${CLASS_NAME_ALERT}`)
-  const alert = Alert.getInstance(target) || new Alert(target)
+  const alert = Alert.getOrCreateInstance(target)
   alert.close()
 })
 
