@@ -157,6 +157,13 @@ var alerts = [...alertList].map(function (el) {
   return new bootstrap.Alert(el);
 })
 ```
+{{< callout info >}}
+For the sole purpose of dismissing an alert, it isn't necessary to initialize the component manually via the JS api.
+
+By making use of  `data-bs-dismiss="alert"`, the component will be initialized automatically and properly dismissed.
+
+<small>See the [triggers](#triggers) section for more details.</small>
+{{< /callout >}}
 
 ### Triggers
 
@@ -175,13 +182,6 @@ or on a button **outside the alert** as demonstrated above:
 Note that closing an alert will remove it from the DOM.
 
 ### Methods
-
-You can create an alert instance with the alert constructor, for example:
-
-```js
-var myAlert = document.getElementById('myAlert')
-var bsAlert = new bootstrap.Alert(myAlert)
-```
 
 <table class="table">
   <thead>
