@@ -1,15 +1,15 @@
 /**
  * --------------------------------------------------------------------------
- * Bootstrap (v5.0.0): collapse.js
+ * Bootstrap (v5.0.1): collapse.js
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  * --------------------------------------------------------------------------
  */
 
 import {
   defineJQueryPlugin,
+  getElement,
   getSelectorFromElement,
   getElementFromSelector,
-  isElement,
   reflow,
   typeCheckConfig
 } from './util/index'
@@ -145,7 +145,7 @@ class Collapse extends BaseComponent {
     const container = SelectorEngine.findOne(this._selector)
     if (actives) {
       const tempActiveData = actives.find(elem => container !== elem)
-      activesData = tempActiveData ? Data.get(tempActiveData, DATA_KEY) : null
+      activesData = tempActiveData ? Collapse.getInstance(tempActiveData) : null
 
       if (activesData && activesData._isTransitioning) {
         return
@@ -272,14 +272,7 @@ class Collapse extends BaseComponent {
   _getParent() {
     let { parent } = this._config
 
-    if (isElement(parent)) {
-      // it's a jQuery object
-      if (typeof parent.jquery !== 'undefined' || typeof parent[0] !== 'undefined') {
-        parent = parent[0]
-      }
-    } else {
-      parent = SelectorEngine.findOne(parent)
-    }
+    parent = getElement(parent)
 
     const selector = `${SELECTOR_DATA_TOGGLE}[data-bs-parent="${parent}"]`
 
@@ -317,7 +310,7 @@ class Collapse extends BaseComponent {
   // Static
 
   static collapseInterface(element, config) {
-    let data = Data.get(element, DATA_KEY)
+    let data = Collapse.getInstance(element)
     const _config = {
       ...Default,
       ...Manipulator.getDataAttributes(element),
@@ -365,7 +358,7 @@ EventHandler.on(document, EVENT_CLICK_DATA_API, SELECTOR_DATA_TOGGLE, function (
   const selectorElements = SelectorEngine.find(selector)
 
   selectorElements.forEach(element => {
-    const data = Data.get(element, DATA_KEY)
+    const data = Collapse.getInstance(element)
     let config
     if (data) {
       // update parent attribute

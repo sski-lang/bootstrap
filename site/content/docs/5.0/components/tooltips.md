@@ -88,7 +88,7 @@ And with custom HTML added:
 With an SVG:
 
 <div class="bd-example tooltip-demo">
-  <a href="#" data-bs-toggle="tooltip" title="Default tooltip">
+  <a href="#" class="d-inline-block" data-bs-toggle="tooltip" title="Default tooltip">
     <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 100 100">
       <rect width="100%" height="100%" fill="#563d7c"/>
       <circle cx="50" cy="50" r="30" fill="#007bff"/>
@@ -415,6 +415,15 @@ tooltip.update()
 ```js
 var exampleTriggerEl = document.getElementById('example')
 var tooltip = bootstrap.Tooltip.getInstance(exampleTriggerEl) // Returns a Bootstrap tooltip instance
+```
+
+#### getOrCreateInstance
+
+*Static* method which allows you to get the tooltip instance associated with a DOM element, or create a new one in case it wasn't initialised
+
+```js
+var exampleTriggerEl = document.getElementById('example')
+var tooltip = bootstrap.Tooltip.getOrCreateInstance(exampleTriggerEl) // Returns a Bootstrap tooltip instance
 ```
 
 ### Events
