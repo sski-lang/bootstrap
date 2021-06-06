@@ -166,7 +166,7 @@ See the [triggers](#triggers) section for more details.
 
 ### Triggers
 
-Dismissal can be achieved with `data` attributes on a button **within the alert**, as demonstrated above:
+Dismissal can be achieved with `data` attributes on a button **within the alert** as demonstrated above:
 
 ```html
 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -178,7 +178,7 @@ or on a button **outside the alert** as demonstrated above:
 <button type="button" class="btn-close" data-bs-dismiss="alert" data-bs-target="#my-alert" aria-label="Close"></button>
 ```
 
-Note that closing an alert will remove it from the DOM.
+**Note that closing an alert will remove it from the DOM.**
 
 ### Methods
 
