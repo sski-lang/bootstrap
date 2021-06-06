@@ -159,11 +159,9 @@ alertList.forEach(function (alert) {
 })
 ```
 {{< callout info >}}
-For the sole purpose of dismissing an alert, it isn't necessary to initialize the component manually via the JS api.
+For the sole purpose of dismissing an alert, it isn't necessary to initialize the component manually via the JS API. By making use of `data-bs-dismiss="alert"`, the component will be initialized automatically and properly dismissed.
 
-By making use of  `data-bs-dismiss="alert"`, the component will be initialized automatically and properly dismissed.
-
-<small>See the [triggers](#triggers) section for more details.</small>
+See the [triggers](#triggers) section for more details.
 {{< /callout >}}
 
 ### Triggers
