@@ -153,9 +153,8 @@ Initialize elements as alerts
 
 ```js
 var alertList = document.querySelectorAll('.alert')
-var alerts = []
-alertList.forEach(function (alert) {
-  alerts.push(new bootstrap.Alert(alert))
+var alerts =  [].slice.call(alertList).map(function (element) {
+  return new bootstrap.Alert(element)
 })
 ```
 {{< callout info >}}
