@@ -112,7 +112,7 @@ class Collapse extends BaseComponent {
   // Public
 
   toggle() {
-    if (this._element.classList.contains(CLASS_NAME_SHOW)) {
+    if (this._isShown()) {
       this.hide()
     } else {
       this.show()
@@ -120,7 +120,7 @@ class Collapse extends BaseComponent {
   }
 
   show() {
-    if (this._isTransitioning || this._element.classList.contains(CLASS_NAME_SHOW)) {
+    if (this._isTransitioning || this._isShown()) {
       return
     }
 
@@ -183,15 +183,15 @@ class Collapse extends BaseComponent {
       })
     }
 
-    this.setTransitioning(true)
+    this.isTransitioning = true
 
     const complete = () => {
+      this.isTransitioning = false
+
       this._element.classList.remove(CLASS_NAME_COLLAPSING)
       this._element.classList.add(CLASS_NAME_COLLAPSE, CLASS_NAME_SHOW)
 
       this._element.style[dimension] = ''
-
-      this.setTransitioning(false)
 
       EventHandler.trigger(this._element, EVENT_SHOWN)
     }
@@ -204,7 +204,7 @@ class Collapse extends BaseComponent {
   }
 
   hide() {
-    if (this._isTransitioning || !this._element.classList.contains(CLASS_NAME_SHOW)) {
+    if (this._isTransitioning || !this._isShown()) {
       return
     }
 
@@ -228,17 +228,17 @@ class Collapse extends BaseComponent {
         const trigger = this._triggerArray[i]
         const elem = getElementFromSelector(trigger)
 
-        if (elem && !elem.classList.contains(CLASS_NAME_SHOW)) {
+        if (elem && !this._isShown(elem)) {
           trigger.classList.add(CLASS_NAME_COLLAPSED)
           trigger.setAttribute('aria-expanded', false)
         }
       }
     }
 
-    this.setTransitioning(true)
+    this.isTransitioning = true
 
     const complete = () => {
-      this.setTransitioning(false)
+      this.isTransitioning = false
       this._element.classList.remove(CLASS_NAME_COLLAPSING)
       this._element.classList.add(CLASS_NAME_COLLAPSE)
       EventHandler.trigger(this._element, EVENT_HIDDEN)
@@ -249,8 +249,8 @@ class Collapse extends BaseComponent {
     this._queueCallback(complete, this._element, true)
   }
 
-  setTransitioning(isTransitioning) {
-    this._isTransitioning = isTransitioning
+  _isShown(element = this._element) {
+    return element.classList.contains(CLASS_NAME_SHOW)
   }
 
   // Private
@@ -295,7 +295,7 @@ class Collapse extends BaseComponent {
       return
     }
 
-    const isOpen = element.classList.contains(CLASS_NAME_SHOW)
+    const isOpen = this._isShown(element)
 
     triggerArray.forEach(elem => {
       if (isOpen) {
